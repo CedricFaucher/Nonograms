@@ -1,12 +1,4 @@
 import { useState, useEffect } from "react";
-import {
-  TableContainer,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  Paper
-} from '@material-ui/core';
 
 export default function VerticalBoard({ verticalBoardSettings }) {
   const { verticalBoard, width, height } = verticalBoardSettings;
@@ -19,9 +11,9 @@ export default function VerticalBoard({ verticalBoardSettings }) {
       if (line.length === width) {
         formatted.push(line);
       } else {
-        const lineToUpdate = Array.of(line);
+        const lineToUpdate = [ ...line ];
         for (var i = 0; i < width - line.length; i++) {
-          lineToUpdate.unshift(null);
+          lineToUpdate.unshift(0);
         }
         formatted.push(lineToUpdate);
       }
@@ -30,20 +22,23 @@ export default function VerticalBoard({ verticalBoardSettings }) {
   }, [verticalBoard, width, height]);
   
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableBody>
-          {formattedVerticalBoard.map((row, rowIndex) => (
-            <TableRow>
-              {row.map((cell, colIndex) => (
-                <TableCell align="center" padding="none" onClick={() => {}}>
-                  {cell}
-                </TableCell>
-              ))}
-            </TableRow>
+    <table style={{ borderCollapse: "collapse" }}>
+    <tbody>
+    {formattedVerticalBoard.map((row, rowIndex) => (
+        <tr>
+          {row.map((cell, colIndex) => (
+            <td
+              align="center"
+              padding="none"
+              onClick={() => {}}
+              style={{ border: "1px gray solid", borderCollapse: "collapse" }}
+            >
+              {cell}
+            </td>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </tr>
+      ))}
+    </tbody>
+  </table>
   );
 }

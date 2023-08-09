@@ -29,16 +29,16 @@ export default function MainGame() {
   }, []);
 
   useEffect(() => {
-    if (undefined !== data.find(board => board.id === 1)) {
-      const boardAsString = data.find(board => board.id === 1).message;
+    if (undefined !== data.find(board => board.id === 0)) {
+      const boardAsString = data.find(board => board.id === 0).message;
   
       const width = convertBinaryStringToInteger(boardAsString.slice(0, 9));
       const height = convertBinaryStringToInteger(boardAsString.slice(9, 18));
       
       const boardSolutionAsString = boardAsString.slice(18);
       const boardSolution = [];
-      const horizontalBoard = [];
-      const verticalBoard = Array.from(Array(width), () => []);
+      const verticalBoard = [];
+      const horizontalBoard = Array.from(Array(width), () => []);
       const verticalAcc = Array.from(Array(width), () => 0);
   
       for (var i = 0; i < height; i++) {
@@ -57,7 +57,7 @@ export default function MainGame() {
               acc = 0;
             }
             if (0 === value && 0 < verticalAcc[j]) {
-              verticalBoard[j].push(verticalAcc[j]);
+              horizontalBoard[j].push(verticalAcc[j]);
               verticalAcc[j] = 0;
             }
           } 
@@ -68,12 +68,12 @@ export default function MainGame() {
           horizontalLine.push(acc);
         }
   
-        horizontalBoard.push(horizontalLine);
+        verticalBoard.push(horizontalLine);
       }
   
-      for (var k = 0; k < verticalBoard.length; k++) {
+      for (var k = 0; k < horizontalBoard.length; k++) {
         if (0 < verticalAcc[k]) {
-          verticalBoard[k].push(verticalAcc[k]);
+          horizontalBoard[k].push(verticalAcc[k]);
         }
       }
   
@@ -91,11 +91,25 @@ export default function MainGame() {
 
   return (
     <>
-      <HorizontalBoard horizontalBoardSettings={horizontalBoardSettings} />
-      <br/>
-      <MainBoard board={mainBoardSettings} setHasWon={setHasWon}/>
-      <br/>
-      <VerticalBoard verticalBoardSettings={verticalBoardSettings} />
+      <table style={{ borderCollapse: "collapse" }}>
+        <tbody>
+          <tr>
+            <td style={{ border: "1px gray solid", padding: 0 }}>
+            </td>
+            <td style={{ border: "1px gray solid", padding: 0 }}>
+              <HorizontalBoard horizontalBoardSettings={horizontalBoardSettings} />
+            </td>
+          </tr>
+          <tr>
+            <td style={{ border: "1px gray solid", padding: 0 }}>
+              <VerticalBoard verticalBoardSettings={verticalBoardSettings} />
+            </td>
+            <td style={{ border: "1px gray solid", padding: 0 }}>
+              <MainBoard board={mainBoardSettings} setHasWon={setHasWon}/> 
+            </td>
+          </tr>
+        </tbody>
+      </table>
       {hasWon && <h1>WIN!</h1>}
     </>
   );

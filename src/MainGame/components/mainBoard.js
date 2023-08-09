@@ -1,12 +1,4 @@
 import { useState, useEffect } from 'react';
-import {
-  TableContainer,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  Paper
-} from '@material-ui/core';
 
 export default function MainBoard({ board, setHasWon }) {
   const { boardSolution, width, height } = board;
@@ -28,20 +20,23 @@ export default function MainBoard({ board, setHasWon }) {
   };
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableBody>
-          {playBoard.map((row, rowIndex) => (
-            <TableRow>
-              {row.map((cell, colIndex) => (
-                <TableCell align="center" padding="none" onClick={() => updatePlayBoard(rowIndex, colIndex)}>
-                  {cell}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <table style={{ borderCollapse: "collapse" }}>
+      <tbody>
+        {playBoard.map((row, rowIndex) => (
+          <tr>
+            {row.map((cell, colIndex) => (
+              <td
+                align="center"
+                padding="none"
+                onClick={() => updatePlayBoard(rowIndex, colIndex)}
+                style={{ cursor: "pointer", border: "1px gray solid", borderCollapse: "collapse" }}
+              >
+                {cell}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
