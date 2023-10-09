@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function BaseDBManipulations() {
+export default function BaseDBManipulations({ isHidden }) {
   const [data, setData] = useState([]);
   const [message, setMessage] = useState(null);
   const [currentInterval, setCurrentInterval] = useState(null);
@@ -71,7 +71,7 @@ export default function BaseDBManipulations() {
   };
 
   return (
-    <div>
+    <div style={{ visibility: isHidden ? "hidden" : "", height: isHidden && 0 }}>
       <ul>
         {data.length <= 0
           ? 'NO DB ENTRIES YET'
