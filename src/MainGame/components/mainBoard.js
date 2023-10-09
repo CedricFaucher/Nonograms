@@ -38,11 +38,14 @@ export default function MainBoard({ board, setHasWon, squaringValue }) {
                 onClick={() => updatePlayBoard(rowIndex, colIndex)}
                 style={{
                   cursor: "pointer",
-                  border: "1px gray solid",
+                  borderTop: "1px solid gray",
+                  borderRight: ((colIndex + 1) !== width && (colIndex + 1) % 5 === 0) ? "2px solid darkgray" : "1px solid gray",
+                  borderBottom: ((rowIndex + 1) !== height && (rowIndex + 1) % 5 === 0) ? "2px solid darkgray" : "1px solid gray",
+                  borderLeft: "1px solid gray",
                   borderCollapse: "collapse",
                   width: squareSize,
                   height: squareSize,
-                  backgroundColor: getColorFromIsCheckedAndTheme (cell.isChecked, theme),
+                  backgroundColor: getColorFromIsCheckedAndTheme(cell.isChecked, theme),
                   fontSize: squareSize / 2
                 }}
               >

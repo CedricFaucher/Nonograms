@@ -56,7 +56,10 @@ export default function VerticalBoard({ verticalBoardSettings }) {
               padding="none"
               onClick={() => changeIsCrossedValue(rowIndex, colIndex)}
               style={{ 
-                border: "1px gray solid",
+                borderTop: "1px solid gray",
+                borderRight: "1px solid gray",
+                borderBottom: ((rowIndex + 1) !== height && (rowIndex + 1) % 5 === 0) ? "2px solid darkgray" : "1px solid gray",
+                borderLeft: "1px solid gray",
                 borderCollapse: "collapse",
                 color: getColorFromIsCheckedAndTheme(cell.value !== 0, theme),
                 textDecoration: cell.isCrossed ? "line-through" : "",
