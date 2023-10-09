@@ -1,36 +1,69 @@
+import { useTheme } from "@emotion/react";
 import { useState, useEffect } from "react";
+import { getColorFromIsCheckedAndTheme } from "../../App";
 
 export default function HorizontalBoard({ horizontalBoardSettings }) {
-  const { horizontalBoard, width, height } = horizontalBoardSettings;
+  const { horizontalBoard, width, height, squareSize } = horizontalBoardSettings;
 
   const [formattedHorizontalBoard, setFormattedHorizontalBoard] = useState([]);
 
+  const theme = useTheme();
+
   useEffect(() => {
-    const pew = [];
+    const formatted = [];
     for (var i = 0; i < height; i++) {
       const horizontalBar = [];
       for (var j = 0; j < width; j++) {
         const position = horizontalBoard[j].length - i - 1;
-        horizontalBar.push(0 > position ? 0 : horizontalBoard[j][position]);
+        const value = 0 > position ? 0 : horizontalBoard[j][position];
+        horizontalBar.push({ value: value, isCrossed: false });
       }
-      pew.unshift(horizontalBar);
+      formatted.unshift(horizontalBar);
     }
-    setFormattedHorizontalBoard(pew);
+    setFormattedHorizontalBoard(formatted);
   }, [horizontalBoard, width, height]);
   
+  const changeIsCrossedValue = (rowIndex, colIndex) => {
+    const newBoard = formattedHorizontalBoard.map((row, rIndex) => {
+      if (rIndex !== rowIndex) {
+        return row;
+      } else {
+        return row.map((col, cIndex) => {
+          if (cIndex !== colIndex) {
+            return col;
+          } else {
+            return { ...col, isCrossed: !col.isCrossed };
+          }
+        });
+      }
+    });
+
+    setFormattedHorizontalBoard(newBoard);
+  };
+
   return (
     <table style={{ borderCollapse: "collapse" }}>
       <tbody>
         {formattedHorizontalBoard.map((row, rowIndex) => (
-          <tr>
+          <tr key={"horizontalRow-" + rowIndex}>
             {row.map((cell, colIndex) => (
               <td
+                key={"horizontalCol-" + colIndex}
                 align="center"
                 padding="none"
-                onClick={() => {}}
-                style={{ border: "1px gray solid", borderCollapse: "collapse" }}
+                onClick={() => changeIsCrossedValue(rowIndex, colIndex)}
+                style={{ 
+                  border: "1px gray solid",
+                  borderCollapse: "collapse",
+                  color: getColorFromIsCheckedAndTheme(cell.value !== 0, theme),
+                  textDecoration: cell.isCrossed ? "line-through" : "",
+                  cursor: "pointer",
+                  width: squareSize,
+                  height: squareSize,
+                  fontSize: squareSize / 2
+                }}
               >
-                {cell}
+                {cell.value}
               </td>
             ))}
           </tr>

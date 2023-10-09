@@ -1,39 +1,72 @@
+import { useTheme } from "@emotion/react";
 import { useState, useEffect } from "react";
+import { getColorFromIsCheckedAndTheme } from "../../App";
 
 export default function VerticalBoard({ verticalBoardSettings }) {
-  const { verticalBoard, width, height } = verticalBoardSettings;
+  const { verticalBoard, width, height, squareSize } = verticalBoardSettings;
 
   const [formattedVerticalBoard, setFormattedVerticalBoard] = useState([]);
+
+  const theme = useTheme();
 
   useEffect(() => {
     const formatted = [];
     verticalBoard.forEach(line => {
-      if (line.length === width) {
-        formatted.push(line);
+      const formattedLine = line.map(el => ({ value: el, isCrossed: false }));
+      if (formattedLine.length === width) {
+        formatted.push(formattedLine);
       } else {
-        const lineToUpdate = [ ...line ];
-        for (var i = 0; i < width - line.length; i++) {
-          lineToUpdate.unshift(0);
+        const lineToUpdate = [ ...formattedLine ];
+        for (var i = 0; i < width - formattedLine.length; i++) {
+          lineToUpdate.unshift({ value: 0, isCrossed: false });
         }
         formatted.push(lineToUpdate);
       }
     });
     setFormattedVerticalBoard(formatted);
   }, [verticalBoard, width, height]);
+
+  const changeIsCrossedValue = (rowIndex, colIndex) => {
+    const newBoard = formattedVerticalBoard.map((row, rIndex) => {
+      if (rIndex !== rowIndex) {
+        return row;
+      } else {
+        return row.map((col, cIndex) => {
+          if (cIndex !== colIndex) {
+            return col;
+          } else {
+            return { ...col, isCrossed: !col.isCrossed };
+          }
+        });
+      }
+    });
+
+    setFormattedVerticalBoard(newBoard);
+  };
   
   return (
     <table style={{ borderCollapse: "collapse" }}>
     <tbody>
     {formattedVerticalBoard.map((row, rowIndex) => (
-        <tr>
+        <tr key={"verticalRow-" + rowIndex}>
           {row.map((cell, colIndex) => (
             <td
+              key={"verticalCol-" + colIndex}
               align="center"
               padding="none"
-              onClick={() => {}}
-              style={{ border: "1px gray solid", borderCollapse: "collapse" }}
+              onClick={() => changeIsCrossedValue(rowIndex, colIndex)}
+              style={{ 
+                border: "1px gray solid",
+                borderCollapse: "collapse",
+                color: getColorFromIsCheckedAndTheme(cell.value !== 0, theme),
+                textDecoration: cell.isCrossed ? "line-through" : "",
+                cursor: "pointer",
+                width: squareSize,
+                height: squareSize,
+                fontSize: squareSize / 2
+              }}
             >
-              {cell}
+              {cell.value}
             </td>
           ))}
         </tr>
