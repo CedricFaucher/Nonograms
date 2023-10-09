@@ -6,6 +6,7 @@ import HorizontalBoard from "./components/horizontalBoard";
 import VerticalBoard from "./components/verticalBoard";
 import ToggleSquaring from "./components/toggleSquaring";
 import { setSquare } from "../utils/squareUtils";
+import { useParams } from "react-router-dom";
 
 const HEIGHT_WEIGHT = 250;
 
@@ -56,6 +57,8 @@ export default function MainGame() {
   const [mainBoardMargin, setMainBoardMargin] = useState(20);
   const [maxSizeSquare, setMaxSizeSquare] = useState(100);
   const [minSizeSquare, setMinSizeSquare] = useState(40);
+
+  const { id } = useParams();
   
   const [windowWidth, windowHeight] = useWindowSize();
   
@@ -92,8 +95,8 @@ export default function MainGame() {
   }, []);
 
   useEffect(() => {
-    if (undefined !== data.find(board => board.id === 0)) {
-      const boardAsString = data.find(board => board.id === 0).message;
+    if (undefined !== data.find(board => board.id === parseInt(id))) {
+      const boardAsString = data.find(board => board.id === parseInt(id)).message;
   
       const width = convertBinaryStringToInteger(boardAsString.slice(0, 9));
       const height = convertBinaryStringToInteger(boardAsString.slice(9, 18));
