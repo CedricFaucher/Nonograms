@@ -9,6 +9,8 @@ export default function MainBoard({ board, setHasWon, squaringValue }) {
   const boardSolutionChecked = JSON.stringify(boardSolution.map(row => row.map(col => col.isChecked)));
 
   const [playBoard, setPlayBoard] = useState([]);
+  const [highlightedSquares, setHighlightedSquares] = useState([]);
+  const [isMouseDownActive, setIsMouseDownActive] = useState([-1, -1]);
 
   const theme = useTheme();
 
@@ -25,6 +27,37 @@ export default function MainBoard({ board, setHasWon, squaringValue }) {
     setPlayBoard(prev => prev.map((r, rI) => r.map((c, cI) => (rI === row && cI === col) ? setSquare(squaringValue, !getSquareValue(squaringValue, c)) : c)));
   };
 
+  const highlightSquares = (currentRowValue, currentColValue) => {
+    setHighlightedSquares([]);
+
+    const isRow = isMouseDownActive[0] === currentRowValue;
+    const isCol = isMouseDownActive[1] === currentColValue;
+
+    if (!isRow && !isCol) {
+      return;
+    }
+    
+    if (isRow && isCol) {
+      setHighlightedSquares([{row: isMouseDownActive[0], col: isMouseDownActive[1]}]);
+      return;
+    }
+
+    const updatedHighlightedSquares = [];
+    const isPositiveVariation = isRow ? currentColValue - isMouseDownActive[1] > 0 : currentRowValue - isMouseDownActive[0] > 0;
+
+    if (isRow) {
+      for (var i = isMouseDownActive[1]; isPositiveVariation ? (i <= currentColValue) : (i >= currentColValue); isPositiveVariation ? i++ : i--) {
+        updatedHighlightedSquares.push({row: isMouseDownActive[0], col: i});
+      }
+    } else {
+      for (var j = isMouseDownActive[0]; isPositiveVariation ? (j <= currentRowValue) : (j >= currentRowValue); isPositiveVariation ? j++ : j--) {
+        updatedHighlightedSquares.push({row: j, col: isMouseDownActive[1]});
+      }
+    }
+
+    setHighlightedSquares(updatedHighlightedSquares);
+  };
+
   return (
     <table style={{ borderCollapse: "collapse" }}>
       <tbody>
@@ -36,6 +69,15 @@ export default function MainBoard({ board, setHasWon, squaringValue }) {
                 align="center"
                 padding="none"
                 onClick={() => updatePlayBoard(rowIndex, colIndex)}
+                onMouseEnter={() => highlightSquares(rowIndex, colIndex)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setIsMouseDownActive([rowIndex, colIndex]);
+                }}
+                onMouseUp={() => {
+                  highlightedSquares.map(highlightedSquare => updatePlayBoard(highlightedSquare.row, highlightedSquare.col))
+                  setIsMouseDownActive([-1, -1]);
+                }}
                 style={{
                   cursor: "pointer",
                   borderTop: "1px solid gray",
@@ -45,7 +87,7 @@ export default function MainBoard({ board, setHasWon, squaringValue }) {
                   borderCollapse: "collapse",
                   width: squareSize,
                   height: squareSize,
-                  backgroundColor: getColorFromIsCheckedAndTheme(cell.isChecked, theme),
+                  backgroundColor: highlightedSquares.map(highlightedSquare => JSON.stringify(highlightedSquare)).includes(JSON.stringify({row: rowIndex, col: colIndex})) ? "lightgreen" : getColorFromIsCheckedAndTheme(cell.isChecked, theme),
                   fontSize: squareSize / 2
                 }}
               >
