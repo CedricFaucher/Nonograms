@@ -7,6 +7,7 @@ import VerticalBoard from "./components/verticalBoard";
 import ToggleSquaring from "./components/toggleSquaring";
 import { setSquare } from "../utils/squareUtils";
 import { useParams } from "react-router-dom";
+import UndoRedo from "./components/undoRedo";
 
 const HEIGHT_WEIGHT = 250;
 
@@ -53,6 +54,9 @@ export default function MainGame() {
     isQuestionMark: false
   });
   const [squareSize, setSquareSize] = useState(30);
+  const [actionsQueue, setActionsQueue] = useState([]);
+  const [redoQueue, setRedoQueue] = useState([]);
+  const [currentAction, setCurrentAction] = useState(null);
   // TODO: Dynamize with user stat input
   const [mainBoardMargin, setMainBoardMargin] = useState(20);
   const [maxSizeSquare, setMaxSizeSquare] = useState(100);
@@ -147,7 +151,7 @@ export default function MainGame() {
       setHorizontalBoardSettings(prev => ({ ...prev, horizontalBoard, width, height: getMaxLengthOfArrayInArray(horizontalBoard) }));
       setVerticalBoardSettings(prev => ({ ...prev, verticalBoard, width: getMaxLengthOfArrayInArray(verticalBoard), height }));
     }
-  }, [data]);
+  }, [id, data]);
 
   const getSquaringValue = () => {
     if (squaringValue.isQuestionMark) {
@@ -184,6 +188,10 @@ export default function MainGame() {
                 board={mainBoardSettings}
                 setHasWon={setHasWon}
                 squaringValue={getSquaringValue()}
+                currentAction={currentAction}
+                setActionsQueue={setActionsQueue}
+                setRedoQueue={setRedoQueue}
+                setCurrentAction={setCurrentAction}
               /> 
             </td>
           </tr>
@@ -191,11 +199,29 @@ export default function MainGame() {
       </table>
       <br />
       <br />
-      <ToggleSquaring
-        squaringValue={squaringValue}
-        setSquaringValue={setSquaringValue}
-        squareSize={squareSize}
-      />
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <ToggleSquaring
+                squaringValue={squaringValue}
+                setSquaringValue={setSquaringValue}
+                squareSize={squareSize}
+              />
+            </td>
+            <td style={{ paddingLeft: "25px" }}>
+              <UndoRedo
+                squareSize={squareSize}
+                setCurrentAction={setCurrentAction}
+                setActionsQueue={setActionsQueue}
+                setRedoQueue={setRedoQueue}
+                actionsQueue={actionsQueue}
+                redoQueue={redoQueue}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
       {hasWon && <h1>WIN!</h1>}
     </div>
   );

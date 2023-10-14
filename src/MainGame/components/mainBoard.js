@@ -3,8 +3,16 @@ import { useState, useEffect } from 'react';
 import { getColorFromIsCheckedAndTheme } from '../../App';
 import { getSquareValue, setSquare } from '../../utils/squareUtils';
 
-export default function MainBoard({ board, setHasWon, squaringValue }) {
-  const { boardSolution, width, height, squareSize } = board;
+export default function MainBoard({ 
+  board, 
+  setHasWon, 
+  squaringValue,
+  currentAction,
+  setActionsQueue,
+  setRedoQueue,
+  setCurrentAction
+}) {
+  const {boardSolution, width, height, squareSize } = board;
 
   const boardSolutionChecked = JSON.stringify(boardSolution.map(row => row.map(col => col.isChecked)));
 
@@ -23,9 +31,22 @@ export default function MainBoard({ board, setHasWon, squaringValue }) {
     setHasWon(JSON.stringify(currentBoardChecked) === boardSolutionChecked);
   }, [playBoard, boardSolutionChecked, setHasWon]);
 
-  const updatePlayBoard = (row, col) => {
-    setPlayBoard(prev => prev.map((r, rI) => r.map((c, cI) => (rI === row && cI === col) ? setSquare(squaringValue, !getSquareValue(squaringValue, c)) : c)));
+  useEffect(() => {
+    if (currentAction !== null) {
+      const currentActionCopy = { ...currentAction };
+      currentActionCopy.squares.forEach(square => updatePlayBoard(square[0], square[1], currentActionCopy.action));
+      setCurrentAction(null);
+    }
+  }, [currentAction, setCurrentAction]);
+
+  const updatePlayBoard = (row, col, action) => {
+    setPlayBoard(prev => prev.map((r, rI) => r.map((c, cI) => (rI === row && cI === col) ? setSquare(action ?? squaringValue, !getSquareValue(action ?? squaringValue, c)) : c)));
   };
+
+  const updateActionsQueue = (squares) => {
+    setActionsQueue(prev => [ ...prev, { squares: squares, action: squaringValue } ]);
+    setRedoQueue([]);
+  }
 
   const highlightSquares = (currentRowValue, currentColValue) => {
     setHighlightedSquares([]);
@@ -68,15 +89,21 @@ export default function MainBoard({ board, setHasWon, squaringValue }) {
                 key={"mainCol-" + colIndex}
                 align="center"
                 padding="none"
-                onClick={() => updatePlayBoard(rowIndex, colIndex)}
+                onClick={() => {
+                  updatePlayBoard(rowIndex, colIndex);
+                  updateActionsQueue([[rowIndex, colIndex]]);
+                }}
                 onMouseEnter={() => highlightSquares(rowIndex, colIndex)}
                 onMouseDown={(e) => {
                   e.preventDefault();
                   setIsMouseDownActive([rowIndex, colIndex]);
                 }}
                 onMouseUp={() => {
-                  highlightedSquares.map(highlightedSquare => updatePlayBoard(highlightedSquare.row, highlightedSquare.col))
                   setIsMouseDownActive([-1, -1]);
+                  if (highlightedSquares.length > 0) {
+                    highlightedSquares.map(highlightedSquare => updatePlayBoard(highlightedSquare.row, highlightedSquare.col))
+                    updateActionsQueue(highlightedSquares.map(highlightedSquare => [highlightedSquare.row, highlightedSquare.col]));
+                  }
                 }}
                 style={{
                   cursor: "pointer",
