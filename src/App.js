@@ -1,6 +1,5 @@
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import BaseDBManipulations from "./BaseDBManipulations";
 import MainGame from "./MainGame/mainGame";
 import { useState } from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
@@ -35,7 +34,6 @@ export default function App() {
   return (
     <ThemeProvider theme={getTheme}>
       <CssBaseline />
-      <BaseDBManipulations isHidden />
       <RouterProvider router={router} />
     </ThemeProvider>
   );

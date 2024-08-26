@@ -1,13 +1,12 @@
 import { useState, useEffect, useLayoutEffect } from "react";
 import MainBoard from "./components/mainBoard";
-import { convertBinaryStringToInteger } from "../utils/binaryUtils";
 import { getMaxLengthOfArrayInArray } from "../utils/arrayUtils";
 import HorizontalBoard from "./components/horizontalBoard";
 import VerticalBoard from "./components/verticalBoard";
 import ToggleSquaring from "./components/toggleSquaring";
-import { setSquare } from "../utils/squareUtils";
 import { useParams } from "react-router-dom";
 import UndoRedo from "./components/undoRedo";
+import { getMainBoardSettings } from "../utils/defaultUtils";
 
 const HEIGHT_WEIGHT = 250;
 
@@ -99,53 +98,16 @@ export default function MainGame() {
   }, []);
 
   useEffect(() => {
-    if (undefined !== data.find(board => board.id === parseInt(id))) {
-      const boardAsString = data.find(board => board.id === parseInt(id)).message;
+    if (undefined !== data.find(board => board._id === id)) {
+      const boardAsString = data.find(board => board._id === id).solution;
   
-      const width = convertBinaryStringToInteger(boardAsString.slice(0, 9));
-      const height = convertBinaryStringToInteger(boardAsString.slice(9, 18));
-      
-      const boardSolutionAsString = boardAsString.slice(18);
-      const boardSolution = [];
-      const verticalBoard = [];
-      const horizontalBoard = Array.from(Array(width), () => []);
-      const verticalAcc = Array.from(Array(width), () => 0);
-  
-      for (var i = 0; i < height; i++) {
-        const line = [];
-        const horizontalLine = [];
-        let acc = 0;
-        for (var j = 0; j < width; j++) {
-          const value = parseInt(boardSolutionAsString.charAt((i * width) + j));
-          line.push(setSquare("CHECKED", value === 1));
-          if (1 === value) {
-            acc++;
-            verticalAcc[j]++;
-          } else {
-            if (0 === value && 0 < acc) {
-              horizontalLine.push(acc);
-              acc = 0;
-            }
-            if (0 === value && 0 < verticalAcc[j]) {
-              horizontalBoard[j].push(verticalAcc[j]);
-              verticalAcc[j] = 0;
-            }
-          } 
-        }
-        boardSolution.push(line);
-  
-        if (0 < acc) {
-          horizontalLine.push(acc);
-        }
-  
-        verticalBoard.push(horizontalLine);
-      }
-  
-      for (var k = 0; k < horizontalBoard.length; k++) {
-        if (0 < verticalAcc[k]) {
-          horizontalBoard[k].push(verticalAcc[k]);
-        }
-      }
+      const {
+        boardSolution,
+        horizontalBoard,
+        verticalBoard,
+        width,
+        height
+      } = getMainBoardSettings(boardAsString);
   
       setMainBoardSettings(prev => ({ ...prev, boardSolution, width, height }))
       setHorizontalBoardSettings(prev => ({ ...prev, horizontalBoard, width, height: getMaxLengthOfArrayInArray(horizontalBoard) }));
