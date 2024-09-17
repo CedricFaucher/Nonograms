@@ -10,7 +10,8 @@ export default function MainBoard({
   currentAction,
   setActionsQueue,
   setRedoQueue,
-  setCurrentAction
+  setCurrentAction,
+  updateLevelFnc
 }) {
   const {boardSolution, width, height, squareSize } = board;
 
@@ -28,7 +29,10 @@ export default function MainBoard({
 
   useEffect(() => {
     const currentBoardChecked = playBoard.map(row => row.map(col => col.isChecked));
-    setHasWon(JSON.stringify(currentBoardChecked) === boardSolutionChecked);
+    const isWin = JSON.stringify(currentBoardChecked) === boardSolutionChecked;
+
+    setHasWon(isWin);
+    updateLevelFnc(playBoard, isWin);
   }, [playBoard, boardSolutionChecked, setHasWon]);
 
   useEffect(() => {

@@ -6,7 +6,10 @@ import VerticalBoard from "./components/verticalBoard";
 import ToggleSquaring from "./components/toggleSquaring";
 import { useParams } from "react-router-dom";
 import UndoRedo from "./components/undoRedo";
-import { getMainBoardSettings } from "../utils/defaultUtils";
+import { getDefaultEmptyBoardSolution, getDefaultHorizontalBoardSolution, getDefaultVerticalBoardSolution, getMainBoardSettings } from "../utils/defaultUtils";
+import ResetModal from "../Menu/components/resetModal";
+import { updateDB } from "../Menu/menu";
+import { CircularProgress } from "@mui/material";
 
 const HEIGHT_WEIGHT = 250;
 
@@ -28,6 +31,7 @@ const useWindowSize = () => {
 
 export default function MainGame() {
   const [data, setData] = useState([]);
+  const [currentData, setCurrentData] = useState();
   const [hasWon, setHasWon] = useState(false);
   const [mainBoardSettings, setMainBoardSettings] = useState({
     boardSolution: [],
@@ -98,8 +102,8 @@ export default function MainGame() {
   }, []);
 
   useEffect(() => {
-    if (undefined !== data.find(board => board._id === id)) {
-      const boardAsString = data.find(board => board._id === id).solution;
+    if (undefined !== currentData) {
+      const boardAsString = currentData.solution;
   
       const {
         boardSolution,
@@ -113,7 +117,7 @@ export default function MainGame() {
       setHorizontalBoardSettings(prev => ({ ...prev, horizontalBoard, width, height: getMaxLengthOfArrayInArray(horizontalBoard) }));
       setVerticalBoardSettings(prev => ({ ...prev, verticalBoard, width: getMaxLengthOfArrayInArray(verticalBoard), height }));
     }
-  }, [id, data]);
+  }, [id, data, currentData]);
 
   const getSquaringValue = () => {
     if (squaringValue.isQuestionMark) {
@@ -127,64 +131,105 @@ export default function MainGame() {
   const getDataFromDb = () => {
     fetch('http://localhost:3001/api/getData')
       .then((data) => data.json())
-      .then((res) => setData(res.data));
+      .then((res) => {
+        setData(res.data);
+        setCurrentData(res.data.find(el => el._id === id));
+      });
   };
 
   return (
     <div style={{ margin: mainBoardMargin }}>
-      <table style={{ borderCollapse: "collapse" }}>
-        <tbody>
-          <tr>
-            <td style={{ border: "1px gray solid", padding: 0 }}>
-            </td>
-            <td style={{ border: "1px gray solid", padding: 0 }}>
-              <HorizontalBoard horizontalBoardSettings={horizontalBoardSettings} />
-            </td>
-          </tr>
-          <tr>
-            <td style={{ border: "1px gray solid", padding: 0 }}>
-              <VerticalBoard verticalBoardSettings={verticalBoardSettings} />
-            </td>
-            <td style={{ border: "1px gray solid", padding: 0 }}>
-              <MainBoard
-                board={mainBoardSettings}
-                setHasWon={setHasWon}
-                squaringValue={getSquaringValue()}
-                currentAction={currentAction}
-                setActionsQueue={setActionsQueue}
-                setRedoQueue={setRedoQueue}
-                setCurrentAction={setCurrentAction}
-              /> 
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <br />
-      <br />
-      <table>
-        <tbody>
-          <tr>
-            <td>
-              <ToggleSquaring
-                squaringValue={squaringValue}
-                setSquaringValue={setSquaringValue}
-                squareSize={squareSize}
-              />
-            </td>
-            <td style={{ paddingLeft: "25px" }}>
-              <UndoRedo
-                squareSize={squareSize}
-                setCurrentAction={setCurrentAction}
-                setActionsQueue={setActionsQueue}
-                setRedoQueue={setRedoQueue}
-                actionsQueue={actionsQueue}
-                redoQueue={redoQueue}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      {hasWon && <h1>WIN!</h1>}
+      {undefined === currentData ? <CircularProgress /> :
+        <>
+          <h1>
+            {currentData.name}
+            <span style={{ marginLeft: "0.75rem" }}>
+
+            </span>
+            <ResetModal
+              confirmFnc={() => {
+                updateDB(
+                  currentData._id,
+                  {
+                    name: currentData.name,
+                    solution: currentData.solution,
+                    boardState: getDefaultEmptyBoardSolution(currentData.solution),
+                    horizontalState: getDefaultHorizontalBoardSolution(currentData.solution),
+                    verticalState: getDefaultVerticalBoardSolution(currentData.solution),
+                    isDone: false
+                  }
+                );
+                getDataFromDb();
+              }}
+              name={currentData.name}
+            />
+          </h1>
+          <table style={{ borderCollapse: "collapse" }}>
+            <tbody>
+              <tr>
+                <td style={{ border: "1px gray solid", padding: 0 }}>
+                </td>
+                <td style={{ border: "1px gray solid", padding: 0 }}>
+                  <HorizontalBoard horizontalBoardSettings={horizontalBoardSettings} />
+                </td>
+              </tr>
+              <tr>
+                <td style={{ border: "1px gray solid", padding: 0 }}>
+                  <VerticalBoard verticalBoardSettings={verticalBoardSettings} />
+                </td>
+                <td style={{ border: "1px gray solid", padding: 0 }}>
+                  <MainBoard
+                    board={mainBoardSettings}
+                    setHasWon={setHasWon}
+                    squaringValue={getSquaringValue()}
+                    currentAction={currentAction}
+                    setActionsQueue={setActionsQueue}
+                    setRedoQueue={setRedoQueue}
+                    setCurrentAction={setCurrentAction}
+                    updateLevelFnc={(board, isWon) => updateDB(
+                      id,
+                      {
+                        name: currentData.name,
+                        solution: currentData.solution,
+                        boardState: board,
+                        horizontalState: currentData.horizontalState,
+                        verticalState: currentData.verticalState,
+                        isDone: isWon
+                      }
+                    )}
+                  /> 
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <br />
+          <br />
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <ToggleSquaring
+                    squaringValue={squaringValue}
+                    setSquaringValue={setSquaringValue}
+                    squareSize={squareSize}
+                  />
+                </td>
+                <td style={{ paddingLeft: "25px" }}>
+                  <UndoRedo
+                    squareSize={squareSize}
+                    setCurrentAction={setCurrentAction}
+                    setActionsQueue={setActionsQueue}
+                    setRedoQueue={setRedoQueue}
+                    actionsQueue={actionsQueue}
+                    redoQueue={redoQueue}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          {hasWon && <h1>WIN!</h1>}
+        </>
+      }
     </div>
   );
 }

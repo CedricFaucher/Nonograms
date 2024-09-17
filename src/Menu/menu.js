@@ -6,6 +6,7 @@ import axios from "axios";
 import { getDefaultEmptyBoardSolution, getDefaultHorizontalBoardSolution, getDefaultVerticalBoardSolution } from "../utils/defaultUtils";
 import { CircularProgress, Grid } from "@mui/material";
 import DeleteModal from "./components/deleteModal";
+import ResetModal from "./components/resetModal";
 
 // CREATE
 const putDataToDB = (objToCreate) => {
@@ -121,6 +122,25 @@ export default function Menu() {
                         isUpdate
                         name={d.name}
                         solution={d.solution}
+                      />
+                    </div>
+                    <div style={{ marginBottom: "0.5rem" }}>
+                      <ResetModal
+                        confirmFnc={() => {
+                          updateDB(
+                            d._id,
+                            {
+                              name: d.name,
+                              solution: d.solution,
+                              boardState: getDefaultEmptyBoardSolution(d.solution),
+                              horizontalState: getDefaultHorizontalBoardSolution(d.solution),
+                              verticalState: getDefaultVerticalBoardSolution(d.solution),
+                              isDone: false
+                            }
+                          );
+                          getDataFromDb();
+                        }}
+                        name={d.name}
                       />
                     </div>
                     <DeleteModal
